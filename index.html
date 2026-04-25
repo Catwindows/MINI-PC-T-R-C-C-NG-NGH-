@@ -6,511 +6,359 @@
     <title>MINI PC HIỆU NĂNG CAO TỪ “ RÁC CÔNG NGHỆ ”</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #10b981;
-            --secondary: #3b82f6;
-            --bg: #fcfcfb;
+            --primary: #3b82f6; 
+            --accent: #60a5fa;
+            --bg-dark: #020617;
+            --card-bg: rgba(15, 23, 42, 0.85);
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
-            color: #1a1a1a;
+            background-color: var(--bg-dark);
+            color: #f8fafc;
             overflow-x: hidden;
         }
-        #bg-canvas {
+        h1, h2, h3, .tech-font { font-family: 'Space Grotesk', sans-serif; }
+
+        .bg-grid {
+            background-image: linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
             position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            opacity: 0.12;
+            top: 0; left: 0; width: 100%; height: 100%; z-index: -2;
         }
+
+        .glow-overlay {
+            position: fixed;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 80%);
+            z-index: -1; pointer-events: none;
+        }
+
         .chart-container {
             position: relative;
             width: 100%;
-            height: 280px;
+            max-width: 500px;
+            margin: auto;
+            height: 300px;
         }
-        @media (min-width: 768px) {
-            .chart-container { height: 380px; }
-        }
+
         .glass-card {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(16, 185, 129, 0.15);
+            background: var(--card-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .glass-card:hover {
-            transform: translateY(-5px);
             border-color: var(--primary);
-            box-shadow: 0 15px 30px -10px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.2);
+            transform: translateY(-8px);
         }
+
+        .blue-glow-text {
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+
         .tab-active {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
             color: white !important;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
         }
-        .reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease-out;
-        }
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .profile-headline {
-            color: #0f172a;
-            text-shadow: 0 1px 6px rgba(15, 23, 42, 0.14);
-        }
-        .profile-subtitle {
-            color: #047857;
-            font-size: 0.95rem;
-            letter-spacing: 0.12em;
-            text-shadow: 0 1px 4px rgba(4, 120, 87, 0.14);
-        }
-        .profile-badge {
-            color: #ffffff;
-            font-size: 0.72rem;
-            font-weight: 800;
-            letter-spacing: 0.16em;
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: 0.8s all ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .profile-frame {
+            position: relative;
+            width: 140px; height: 140px;
         }
         .profile-img {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             object-fit: cover;
-            border-radius: 24px;
-            border: 3px solid white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 28px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
-        .img-container {
-            width: 120px;
-            height: 120px;
-            margin-bottom: 1.5rem;
-        }
-        @media (min-width: 640px) {
-            .img-container {
-                width: 160px;
-                height: 160px;
-            }
-        }
+        
+        .compare-row { border-bottom: 1px solid rgba(59, 130, 246, 0.1); }
+        .compare-row:last-child { border: none; }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- Chosen Palette: "Cyber-Organic Responsive" - Nền trắng trung tính, Emerald Green làm chủ đạo, tối ưu hiển thị cho cả mobile và desktop. -->
-    
     <!-- Application Structure Plan:
-        1. Navigation: Menu linh hoạt.
-        2. Hero Section: Giới thiệu dự án với hiệu ứng Binary Canvas.
-        3. Team Section: Cập nhật ảnh của Minh và Võ với thiết kế thẻ hồ sơ cân xứng.
-        4. Innovation Tabs: Chi tiết 3 giải pháp công nghệ trọng tâm.
-        5. Finance & Stats: Biểu đồ Donut và Radar Chart để chứng minh hiệu quả.
+        1. Navigation: Header đổi tên thành "MINI PC TÁI CHẾ" để tiết kiệm diện tích.
+        2. Hero: Tiêu đề chính thức dài đầy đủ.
+        3. Team Section: Sử dụng ảnh anh-minh.jpg và anh-vo.jpg.
+        4. Tech Core: Tab chuyển đổi các giải pháp kỹ thuật.
+        5. Comparison: So sánh Dex-Station vs PC truyền thống.
     -->
 
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
-    <canvas id="bg-canvas"></canvas>
+    <div class="bg-grid"></div>
+    <div class="glow-overlay"></div>
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-white/70 backdrop-blur-lg border-b border-emerald-50">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6">
-            <div class="flex justify-between items-center h-16 sm:h-20">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold shadow-md" style="background: #10b981;">MV</div>
-                    <span class="font-extrabold text-sm sm:text-lg tracking-tight text-slate-800 uppercase"> MINI PC HIỆU NĂNG CAO TỪ “ RÁC CÔNG NGHỆ ”</span>
-                </div>
-                <div class="flex space-x-3 sm:space-x-8 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-500">
-                    <a href="#hero" class="hover:text-primary transition-colors">Dự án</a>
-                    <a href="#team" class="hover:text-primary transition-colors">Tác giả</a>
-                    <a href="#economics" class="hover:text-primary transition-colors">Kỹ thuật</a>
-                    <a href="#details" class="hover:text-primary transition-colors">Nội dung</a>
-                </div>
+    <nav class="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-blue-900/30">
+        <div class="max-w-7xl mx-auto px-6 h-16 sm:h-20 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-[0_0_15px_rgba(37,99,235,0.5)]">MV</div>
+                <span class="font-bold text-xs sm:text-lg tracking-tighter uppercase">MINI PC TÁI CHẾ</span>
+            </div>
+            <div class="flex space-x-4 sm:space-x-8 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-slate-400">
+                <a href="#hero" class="hover:text-blue-400 transition-colors">Ý tưởng</a>
+                <a href="#compare" class="hover:text-blue-400 transition-colors">So sánh</a>
+                <a href="#team" class="hover:text-blue-400 transition-colors">Tác giả</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero -->
-    <header id="hero" class="pt-24 sm:pt-44 pb-12 sm:pb-20 px-4">
-        <div class="max-w-4xl mx-auto text-center reveal">
-            <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full mb-6 border border-emerald-200 uppercase tracking-tighter">Vĩnh Long • Sáng Tạo Kỹ Thanh THiếu Niên Nhi Đồng 2026</span>
-            <h1 class="text-4xl sm:text-6xl md:text-7xl font-black text-slate-900 mb-6 leading-tight tracking-tighter">
-                Tái Sinh <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-blue-600 italic">Rác Công Nghệ</span>
+    <header id="hero" class="pt-32 sm:pt-44 pb-16 px-6">
+        <div class="max-w-6xl mx-auto text-center reveal">
+            <div class="inline-flex items-center space-x-2 px-4 py-1.5 bg-blue-900/20 border border-blue-500/30 rounded-full text-blue-400 text-[9px] font-black uppercase mb-8 tracking-widest">
+                <span>Vĩnh Long • Sáng Tạo Thanh Thiếu Niên Nhi Đồng 2026</span>
+            </div>
+            <h1 class="text-3xl sm:text-6xl md:text-7xl font-black mb-8 leading-tight tracking-tighter uppercase px-2">
+                MINI PC HIỆU NĂNG CAO TỪ <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-700 italic blue-glow-text">“RÁC CÔNG NGHỆ”</span>
             </h1>
-            <p class="text-sm sm:text-lg text-slate-500 mb-10 max-w-2xl mx-auto font-medium px-4 leading-relaxed">
-                Biến mainboard Samsung Note 8 lỗi màn hình thành Mini PC học tập mạnh mẽ với giải nhiệt thụ động và 100% linh hoạt.
+            <p class="text-slate-400 text-sm sm:text-xl max-w-3xl mx-auto mb-12 font-medium leading-relaxed px-4">
+                "Hồi sinh" bo mạch chủ Samsung Note 8 lỗi màn hình thành công cụ học tập mạnh mẽ, tản nhiệt thụ động 0dB và pin tích hợp.
             </p>
             <div class="flex flex-col sm:flex-row justify-center gap-4 px-6">
-                <a href="#team" class="px-8 py-3.5 bg-slate-900 text-white font-bold rounded-2xl text-sm shadow-xl hover:bg-slate-800 transition-all">Gặp gỡ tác giả</a>
-                <a href="#economics" class="px-8 py-3.5 bg-white text-emerald-600 border border-emerald-100 font-bold rounded-2xl text-sm shadow-md hover:bg-emerald-50 transition-all">Chi tiết dự án</a>
+                <a href="#compare" class="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all text-sm uppercase">Khám phá hiệu năng</a>
+                <a href="#team" class="px-10 py-4 glass-card font-bold rounded-2xl hover:bg-white/5 transition-all text-sm uppercase">Đội ngũ tác giả</a>
             </div>
         </div>
     </header>
 
     <!-- Team Section -->
-    <section id="team" class="py-16 sm:py-24 px-4 max-w-7xl mx-auto">
-        <div class="text-center mb-12 reveal">
-            <h2 class="text-2xl sm:text-4xl font-black text-slate-900 mb-3 uppercase tracking-tight">Đội Ngũ Thực Hiện</h2>
-            <div class="h-1.5 w-20 bg-primary mx-auto rounded-full"></div>
-            <p class="mt-4 text-slate-500 font-semibold text-xs sm:text-sm">Lớp 9/2 • Trường THCS Nguyễn Đình Chiểu, tỉnh Vĩnh Long</p>
+    <section id="team" class="py-20 px-6 max-w-7xl mx-auto">
+        <div class="text-center mb-16 reveal">
+            <h2 class="text-3xl font-black uppercase tracking-widest mb-4">Đội Ngũ Thực Hiện</h2>
+            <div class="h-1 w-20 bg-blue-600 mx-auto rounded-full"></div>
+            <p class="mt-4 text-slate-500 text-sm font-bold uppercase tracking-tighter">Trường THCS Nguyễn Đình Chiểu, tỉnh Vĩnh Long</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-12">
-            <!-- Minh's Profile -->
-            <div class="glass-card p-8 sm:p-12 rounded-[40px] flex flex-col items-center text-center reveal">
-                <div class="img-container relative">
-                    <img src="min-avatar.jpg" alt="Dương Khải Minh" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Minh&background=10b981&color=fff'">
-                    <div class="absolute -bottom-3 -right-3 bg-emerald-600 text-white p-2 rounded-xl shadow-xl profile-badge uppercase">Trưởng nhóm</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+            <!-- Tác giả 1 -->
+            <div class="glass-card p-10 rounded-[45px] flex flex-col items-center text-center reveal">
+                <div class="profile-frame mb-8">
+                    <!-- Hai bạn hãy đổi tên ảnh của Minh thành anh-minh.jpg -->
+                    <img src="min-avatar.jpg" alt="Dương Khải Minh" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Minh&background=3b82f6&color=fff&size=256'">
+                    <div class="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-xl text-[9px] font-black uppercase shadow-lg">Lead Design</div>
                 </div>
-                <h3 class="text-2xl sm:text-3xl font-black text-slate-800 mb-1 profile-headline">Dương Khải Minh</h3>
-                <p class="profile-subtitle font-bold mb-8 uppercase tracking-widest">Tác giả 1 - Sáng tạo phần cứng</p>
-                <div class="w-full space-y-4 text-left border-t border-emerald-50 pt-8">
-                    <div class="flex items-start gap-4">
-                        <div class="p-2 bg-emerald-50 rounded-lg text-lg">💡</div>
-                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium">Chủ trì ý tưởng, thiết kế hệ thống và lắp ráp cấu trúc Mini PC.</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="p-2 bg-emerald-50 rounded-lg text-lg">📞</div>
-                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-bold">SĐT: 0941779849</p>
-                    </div>
+                <h3 class="text-2xl font-bold text-white mb-2 uppercase">Dương Khải Minh</h3>
+                <p class="text-blue-500 font-bold text-xs uppercase tracking-widest mb-8">Lớp 9/2 - Tác giả 1</p>
+                <div class="w-full pt-8 border-t border-blue-900/30 text-left space-y-4 font-medium">
+                    <p class="text-slate-400 text-sm flex gap-3 italic"><span class="text-blue-500">◆</span> Phụ trách Ý tưởng chính & tối ưu phần cững.</p>
+                    <p class="text-slate-400 text-sm flex gap-3"><span class="text-blue-500">◆</span> SĐT: 0941.779.849</p>
                 </div>
             </div>
 
-            <!-- Võ's Profile -->
-            <div class="glass-card p-8 sm:p-12 rounded-[40px] flex flex-col items-center text-center reveal">
-                <div class="img-container relative">
-                    <img src="vo-avatar.jpg" alt="Tăng Khánh Võ" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Vo&background=3b82f6&color=fff'">
-                    <div class="absolute -bottom-3 -right-3 bg-blue-500 p-2 rounded-xl shadow-xl profile-badge uppercase">Kỹ thuật</div>
+            <!-- Tác giả 2 -->
+            <div class="glass-card p-10 rounded-[45px] flex flex-col items-center text-center reveal">
+                <div class="profile-frame mb-8">
+                    <!-- Hai bạn hãy đổi tên ảnh của Võ thành anh-vo.jpg -->
+                    <img src="vo-avatar.jpg" alt="Tăng Khánh Võ" class="profile-img" onerror="this.src='https://ui-avatars.com/api/?name=Vo&background=1d4ed8&color=fff&size=256'">
+                    <div class="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-xl text-[9px] font-black uppercase shadow-lg">Tech Lead</div>
                 </div>
-                <h3 class="text-2xl sm:text-3xl font-black text-slate-800 mb-1 profile-headline">Tăng Khánh Võ</h3>
-                <p class="text-blue-600 font-bold text-xs mb-8 uppercase tracking-widest">Tác giả 2 - Thử nghiệm</p>
-                <div class="w-full space-y-4 text-left border-t border-blue-50 pt-8">
-                    <div class="flex items-start gap-4">
-                        <div class="p-2 bg-blue-50 rounded-lg text-lg">⚙️</div>
-                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium">Chịu trách nhiệm tối ưu hóa,thử nghiệm độ ổn định.</p>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <div class="p-2 bg-blue-50 rounded-lg text-lg">📞</div>
-                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed font-bold">SĐT: 0767200291</p>
-                    </div>
+                <h3 class="text-2xl font-bold text-white mb-2 uppercase">Tăng Khánh Võ</h3>
+                <p class="text-blue-500 font-bold text-xs uppercase tracking-widest mb-8">Lớp 9/2 - Tác giả 2</p>
+                <div class="w-full pt-8 border-t border-blue-900/30 text-left space-y-4 font-medium">
+                    <p class="text-slate-400 text-sm flex gap-3 italic"><span class="text-blue-500">◆</span> Phụ trách thiết kế & Kiểm tra sản phẩm.</p>
+                    <p class="text-slate-400 text-sm flex gap-3"><span class="text-blue-500">◆</span> SĐT: 0765.237.112</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Innovation Tabs -->
-    <section id="innovation" class="py-20 bg-emerald-900/5 px-4">
-        <div class="max-w-5xl mx-auto">
-            <div class="flex flex-wrap justify-center gap-3 mb-10 reveal">
-                <button onclick="switchTab('tab-eco')" id="btn-eco" class="interactive-tab tab-active px-6 py-3 rounded-2xl font-bold text-[10px] sm:text-xs uppercase transition-all">♻️ Vỏ tái chế</button>
-                <button onclick="switchTab('tab-heat')" id="btn-heat" class="interactive-tab px-6 py-3 rounded-2xl font-bold text-[10px] sm:text-xs uppercase transition-all bg-white text-slate-500 shadow-sm">❄️ Tản nhiệt</button>
-                <button onclick="switchTab('tab-ups')" id="btn-ups" class="interactive-tab px-6 py-3 rounded-2xl font-bold text-[10px] sm:text-xs uppercase transition-all bg-white text-slate-500 shadow-sm">🔋 Pin</button>
+    <!-- Comparison Section -->
+    <section id="compare" class="py-24 bg-slate-950/40 border-y border-blue-900/20 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl font-black uppercase tracking-widest mb-4 italic">ĐỐI ĐẦU CÔNG NGHỆ</h2>
+                <p class="text-slate-500 font-medium">Giải pháp đột phá so với PC văn phòng truyền thống</p>
             </div>
 
-            <div class="glass-card p-8 sm:p-14 rounded-[50px] shadow-2xl flex items-center reveal">
-                <div id="tab-eco" class="tab-content w-full flex flex-col md:flex-row gap-10 items-center">
-                    <div class="md:w-3/5 text-center md:text-left">
-                        <h3 class="text-2xl sm:text-3xl font-black mb-6 text-emerald-800">Tái chế 100%</h3>
-                        <p class="text-slate-500 text-base sm:text-lg leading-relaxed font-medium">
-                            Chúng em "cứu" bo mạch Note 8 khỏi bãi phế liệu, tận dụng vỏ hộp công nghệ cũ và nhôm từ Tivi hỏng. Sản phẩm chứng minh rác thải cũng có thể trở thành công cụ học tập đắc lực.
-                        </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <!-- Bảng so sánh -->
+                <div class="glass-card rounded-[40px] overflow-hidden reveal">
+                    <div class="p-8 bg-blue-900/20 border-b border-blue-900/30 text-center">
+                        <h4 class="text-xl font-black uppercase tracking-widest text-blue-400">THÔNG SỐ ĐỐI CHIẾU</h4>
                     </div>
-                    <div class="md:w-2/5 w-full bg-emerald-500/10 p-8 rounded-3xl border-2 border-dashed border-emerald-200 text-center">
-                        <p class="text-5xl font-black text-emerald-600 mb-2">0 VNĐ</p>
-                        <p class="font-bold text-emerald-800 text-[10px] uppercase tracking-widest">Chi phí vật liệu vỏ</p>
-                    </div>
-                </div>
-                <!-- Other tabs hidden by default -->
-                <div id="tab-heat" class="tab-content hidden w-full flex flex-col md:flex-row gap-10 items-center">
-                    <div class="md:w-3/5 text-center md:text-left">
-                        <h3 class="text-2xl sm:text-3xl font-black mb-6 text-blue-800">Tản Nhiệt không ồn ào</h3>
-                        <p class="text-slate-500 text-base sm:text-lg leading-relaxed font-medium">
-                            Loại bỏ hoàn toàn quạt cơ học gây ồn. Sử dụng khối nhôm diện tích lớn gắn trực tiếp vào chip, giúp máy hoạt động bền bỉ, yên tĩnh và không bám bụi.
-                        </p>
-                    </div>
-                    <div class="md:w-2/5 grid grid-cols-2 gap-4 w-full">
-                        <div class="p-6 bg-blue-50 rounded-3xl text-center shadow-sm"><p class="text-3xl font-black text-blue-600">0dB</p><p class="text-[10px] font-bold uppercase mt-1">Tiếng ồn</p></div>
-                        <div class="p-6 bg-blue-50 rounded-3xl text-center shadow-sm"><p class="text-3xl font-black text-blue-600">24/7</p><p class="text-[10px] font-bold uppercase mt-1">Ổn định</p></div>
-                    </div>
-                </div>
-                <div id="tab-ups" class="tab-content hidden w-full flex flex-col md:flex-row gap-10 items-center">
-                    <div class="md:w-3/5 text-center md:text-left">
-                        <h3 class="text-2xl sm:text-3xl font-black mb-6 text-orange-800">Nguồn Điện Di Động</h3>
-                        <p class="text-slate-500 text-base sm:text-lg leading-relaxed font-medium">
-                            Giữ lại 100% pin zin. Các bạn có thể rút sạc, mang máy từ bàn học sang phòng họp nhóm mà không cần tắt nguồn hay lo mất dữ liệu khi cúp điện.
-                        </p>
-                    </div>
-                    <div class="md:w-2/5 w-full bg-orange-50 p-8 rounded-3xl border border-orange-100 shadow-sm">
-                        <div class="w-full bg-slate-200 h-4 rounded-full overflow-hidden mb-4"><div class="bg-orange-500 h-full w-[100%] shadow-[0_0_15px_rgba(249,115,22,0.5)]"></div></div>
-                        <p class="text-center font-black text-orange-600 text-sm uppercase tracking-tighter tracking-widest">100% tính đa dụng</p>
+                    <div class="p-8 space-y-4 text-xs sm:text-sm">
+                        <div class="compare-row py-4 flex justify-between font-black uppercase tracking-widest opacity-40">
+                            <span>Tiêu chí</span>
+                            <span>Sản phẩm của nhóm</span>
+                            <span>PC Phổ thông</span>
+                        </div>
+                        <div class="compare-row py-4 flex justify-between items-center">
+                            <span class="text-slate-300 font-bold">Chi phí</span>
+                            <span class="text-emerald-400 font-black">428.358đ</span>
+                            <span class="text-slate-500">~7.000.000đ</span>
+                        </div>
+                        <div class="compare-row py-4 flex justify-between items-center">
+                            <span class="text-slate-300 font-bold">Tiếng ồn</span>
+                            <span class="text-blue-400 font-black">0dB (Tuyệt đối)</span>
+                            <span class="text-slate-500">30-50dB (Quạt)</span>
+                        </div>
+                        <div class="compare-row py-4 flex justify-between items-center">
+                            <span class="text-slate-300 font-bold">UPS (Pin)</span>
+                            <span class="text-blue-400 font-black">Có sẵn (6 Giờ)</span>
+                            <span class="text-slate-500">Không hỗ trợ</span>
+                        </div>
+                        <div class="compare-row py-4 flex justify-between items-center">
+                            <span class="text-slate-300 font-bold">Môi trường</span>
+                            <span class="text-emerald-400 font-black">Tái chế 100%</span>
+                            <span class="text-slate-500 text-[10px]">Linh kiện mới</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Economics Dashboard -->
-    <section id="economics" class="py-20 px-4 max-w-6xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div class="reveal">
-                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-8 uppercase tracking-tight">Ngân Sách "Siêu Rẻ"</h2>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between p-5 glass-card rounded-2xl border-l-4 border-emerald-500 shadow-sm">
-                        <span class="font-bold text-slate-700 text-sm">Linh kiện Note 8 cũ</span>
-                        <span class="font-black text-emerald-600 text-sm">250.000 VNĐ</span>
+                <!-- Biểu đồ Radar -->
+                <div class="glass-card p-10 rounded-[40px] reveal">
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
                     </div>
-                    <div class="flex items-center justify-between p-5 glass-card rounded-2xl border-l-4 border-blue-500 shadow-sm">
-                        <span class="font-bold text-slate-700 text-sm">Hub kết nối chuẩn Dex</span>
-                        <span class="font-black text-blue-600 text-sm">100.000 VNĐ</span>
-                    </div>
-                    <div class="flex items-center justify-between p-5 glass-card rounded-2xl border-l-4 border-orange-500 shadow-sm">
-                        <span class="font-bold text-slate-700 text-sm">Phụ kiện rời & tản nhiệt</span>
-                        <span class="font-black text-orange-600 text-sm">78.358 VNĐ</span>
-                    </div>
-                    <p class="text-slate-400 text-[10px] font-bold uppercase mt-4 text-center">Tổng cộng: 428.358 VNĐ (Chỉ bằng ~5% giá PC mới)</p>
+                    <p class="text-center text-[10px] text-slate-500 font-bold uppercase mt-8 tracking-[0.3em]">Phân tích đa chiều hiệu năng</p>
                 </div>
-            </div>
-            <div class="bg-white p-8 sm:p-12 rounded-[50px] shadow-2xl border border-slate-50 reveal">
-                <div class="chart-container">
-                    <canvas id="radarChart"></canvas>
-                </div>
-                <p class="text-center text-[10px] font-bold text-slate-400 uppercase mt-6 tracking-widest">So sánh Dex-Station vs PC Văn Phòng</p>
             </div>
         </div>
     </section>
 
-    <!-- Detailed Proposal Content -->
-    <section id="details" class="py-20 bg-slate-50 px-4">
-        <div class="max-w-6xl mx-auto space-y-16">
-            <div class="text-center reveal">
-                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-3 uppercase tracking-tight">Bản Thuyết Minh Đề Tài</h2>
-                    <p class="text-slate-500 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed">Bản thuyết minh này trình bày ý tưởng tái sinh mainboard Samsung Note 8 thành Mini PC, với tản nhiệt thụ động, pin nguyên bản và giải pháp thân thiện với môi trường.</p>
+    <!-- Technical Tabs -->
+    <section class="py-24 px-6 max-w-6xl mx-auto">
+        <h2 class="text-3xl font-black text-center mb-16 uppercase tracking-widest">ĐẶC TÍNH KỸ THUẬT</h2>
+        <div class="flex flex-wrap justify-center gap-3 mb-10 reveal">
+            <button onclick="switchTab('eco')" id="btn-eco" class="px-8 py-3 rounded-2xl font-black text-[10px] uppercase transition-all tab-active">♻️ Tuần hoàn</button>
+            <button onclick="switchTab('heat')" id="btn-heat" class="px-8 py-3 rounded-2xl font-black text-[10px] uppercase transition-all glass-card text-slate-500 border-none">❄️ Tản nhiệt</button>
+            <button onclick="switchTab('ups')" id="btn-ups" class="px-8 py-3 rounded-2xl font-black text-[10px] uppercase transition-all glass-card text-slate-500 border-none">🔋 Pin </button>
+        </div>
 
-            <div class="grid gap-10 lg:grid-cols-2">
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">1. Thông Tin Tác Giả</h3>
-                    <ul class="space-y-3 text-slate-600 leading-relaxed text-sm">
-                        <li><strong>Dương Khải Minh</strong> – Lớp 9/2, THCS Nguyễn Đình Chiểu, Vĩnh Long. SĐT: 0941779849.</li>
-                        <li><strong>Tăng Khánh Võ</strong> – Lớp 9/2, THCS Nguyễn Đình Chiểu, Vĩnh Long. SĐT: 0767200291.</li>
-                        <li>Trường: THCS Nguyễn Đình Chiểu, Tỉnh Vĩnh Long.</li>
-                        <li>Đề tài dự thi: <strong>“MINI PC HIỆU NĂNG CAO TỪ “RÁC CÔNG NGHỆ””</strong>.</li>
-                        <li>Lĩnh vực: <strong>Sản phẩm thân thiện với môi trường</strong>.</li>
-                    </ul>
+        <div class="glass-card p-10 sm:p-16 rounded-[60px] reveal">
+            <div id="eco" class="tab-content flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <h3 class="text-3xl font-black text-blue-400 mb-6 uppercase tracking-tight italic">TÁI SINH THỰC THỤ</h3>
+                    <p class="text-slate-400 text-lg leading-relaxed font-medium">Sử dụng <span class="text-white">vỏ đầu thu truyền hình Vĩnh Long</span> tháo rời từ bãi phế liệu để làm Case máy. Toàn bộ linh kiện cốt lõi được tận dụng triệt để, kéo dài vòng đời sản phẩm và giảm thiểu rác thải nhựa tại địa phương.</p>
                 </div>
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">2. Ý Tưởng Sáng Tạo</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed mb-4">Hiện nay, rác thải điện tử từ điện thoại thông minh cao cấp hỏng màn hình đang trở thành vấn đề môi trường nghiêm trọng tại Vĩnh Long. Những chiếc máy như Samsung Note 8 có bộ vi xử lý rất mạnh nhưng thường bị vứt bỏ do chi phí thay màn hình quá cao. Nhóm ý tưởng là tái sinh bo mạch chủ và pin của các thiết bị này thành Mini PC để bàn.</p>
-                    <div class="space-y-2 text-slate-600 text-sm leading-relaxed">
-                        <p><strong>Điểm đột phá:</strong> thiết kế hệ thống tản nhiệt thụ động hoàn toàn và tận dụng 100% viên pin nguyên bản để đạt tính di động cao.</p>
-                        <p>Giải pháp giúp máy hoạt động ổn định khi điện lưới chập chờn và cho phép rút sạc, di chuyển máy sang vị trí khác mà không làm gián đoạn công việc.</p>
-                    </div>
+                <div class="md:w-1/2 w-full h-72 bg-slate-900 rounded-3xl border-2 border-dashed border-blue-500/20 flex overflow-hidden">
+                    <!-- Hai bạn đặt tên ảnh vỏ case là vo-dau-thu.png -->
+                    <img src="vo-dau-thu.png" alt="Vỏ Case" class="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all cursor-pointer">
                 </div>
             </div>
-
-            <div class="grid gap-10 lg:grid-cols-2">
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">3. Tính Mới & Sáng Tạo</h3>
-                    <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
-                        <li><strong>Chuyển đổi chức năng:</strong> từ smartphone sang PC để bàn qua Samsung DeX.</li>
-                        <li><strong>Kinh tế tuần hoàn:</strong> kéo dài vòng đời linh kiện bằng cách sử dụng lại bo mạch và pin của máy cũ.</li>
-                        <li><strong>Giải pháp tản nhiệt thụ động:</strong> lá nhôm diện tích lớn kết hợp keo tản nhiệt chuyên dụng gắn trực tiếp lên SoC, thay thế quạt và bộ phận cơ khí.</li>
-                        <li><strong>Tích hợp pin để có tính di động cao:</strong> sử dụng 100% viên pin Li-ion nguyên bản như UPS tích hợp, giúp máy giữ nguồn khi rút sạc hoặc mất điện.</li>
-                        <li><strong>Vỏ case tối giản:</strong> tận dụng vỏ hộp công nghệ lớp 5, che kín linh kiện và chỉ lộ cổng kết nối cần thiết.</li>
-                    </ul>
+            <div id="heat" class="tab-content hidden flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <h3 class="text-3xl font-black text-blue-400 mb-6 uppercase tracking-tight italic">COOLING 0dB</h3>
+                    <p class="text-slate-400 text-lg leading-relaxed font-medium">Khối nhôm diện tích lớn được tháo từ bo mạch Tivi cũ, mài nhẵn bề mặt và gắn trực tiếp vào chip SoC. Giải pháp này giúp máy luôn mát mẻ trong quá trình Code Python hay học tập mà không cần tiêu tốn năng lượng cho quạt.</p>
                 </div>
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">4. Nguyên Vật Liệu Chế Tạo</h3>
-                    <div class="space-y-4 text-slate-600 text-sm leading-relaxed">
-                        <div class="grid grid-cols-3 gap-3 bg-emerald-50 p-4 rounded-3xl border border-emerald-100 font-bold">
-                            <span>STT</span><span>Linh kiện</span><span>Giá</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>1</span><span>Mainboard Samsung Note 8 (hỏng màn hình)</span><span>250.000đ</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>2</span><span>Viên pin Li-ion nguyên bản</span><span>0đ</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>3</span><span>Hub USB-C to HDMI/USB</span><span>100.000đ</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>4</span><span>Tản nhiệt nhôm diện tích lớn</span><span>0đ</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>5</span><span>Vỏ case nhựa tái chế</span><span>0đ</span>
-                        </div>
-                        <div class="grid grid-cols-3 gap-3 p-4 rounded-3xl bg-white shadow-sm border border-slate-100">
-                            <span>6</span><span>Phụ kiện</span><span>78.358đ</span>
-                        </div>
-                        <div class="text-right font-black text-slate-900 text-sm">Tổng cộng: 428.358đ</div>
-                    </div>
+                <div class="md:w-1/2 w-full h-72 bg-slate-900 rounded-3xl border-2 border-dashed border-blue-500/20 flex overflow-hidden">
+                    <!-- Hai bạn đặt tên ảnh tản nhiệt là khoi-tan-nhiet.png -->
+                    <img src="khoi-tan-nhiet.png" alt="Tản nhiệt" class="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all">
                 </div>
             </div>
-
-            <div class="grid gap-10 lg:grid-cols-2">
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">5. Quy Trình Chế Biến - Hoàn Thiện</h3>
-                    <ol class="list-decimal list-inside space-y-3 text-slate-600 text-sm leading-relaxed">
-                        <li>Sơ chế: tháo dỡ điện thoại cũ, vệ sinh bo mạch, loại bỏ module không cần thiết, giữ lại pin và kiểm tra ổn định.</li>
-                        <li>Xử lý tản nhiệt: mài nhẵn bề mặt nhôm tái chế, dùng keo tản nhiệt gắn trực tiếp lên SoC, dẫn nhiệt ra khối nhôm lớn.</li>
-                        <li>Lắp đặt pin: cố định pin vào vỏ, nối lại với mainboard, thiết kế để pin vừa sạc vừa cung cấp điện khi rút sạc.</li>
-                        <li>Lắp ráp casing: cắt gọt vỏ nhựa vừa khít, chỉ để lộ cổng HDMI, USB và nguồn, cố định bo mạch và khối tản nhiệt an toàn.</li>
-                        <li>Cấu hình phần mềm: kết nối màn hình, ngoại vi, kích hoạt Samsung DeX, cài đặt phần mềm học tập và lập trình.</li>
-                    </ol>
+            <div id="ups" class="tab-content hidden flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2">
+                    <h3 class="text-3xl font-black text-blue-400 mb-6 uppercase tracking-tight italic">6 GIỜ LÀM VIỆC LIÊN TỤC</h3>
+                    <p class="text-slate-400 text-lg leading-relaxed font-medium">Bằng cách tối ưu hóa 100% pin Li-ion nguyên bản, hệ thống có khả năng duy trì hoạt động suốt 6 giờ. Người dùng có thể rút sạc di chuyển từ bàn học sang phòng khách mà không làm gián đoạn công việc.</p>
                 </div>
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-2xl font-black text-slate-900 mb-5">6. Nguyên Tắc Hoạt Động</h3>
-                    <ul class="space-y-3 text-slate-600 text-sm leading-relaxed">
-                        <li>Thiết bị nhận nguồn qua cổng USB-C trong khi pin đồng thời được sạc.</li>
-                        <li>Mainboard xử lý tác vụ, xuất hình ảnh ra màn hình lớn qua Samsung DeX.</li>
-                        <li>Khối nhôm thụ động hấp thụ nhiệt từ SoC và giải tỏa bằng đối lưu tự nhiên.</li>
-                        <li>Pin hoạt động như UPS tích hợp, giữ máy bật khi rút sạc hoặc khi mất điện đột ngột.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="grid gap-10 lg:grid-cols-3">
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-xl font-black text-slate-900 mb-4">Khả năng Áp Dụng</h3>
-                    <ul class="space-y-2 text-slate-600 text-sm leading-relaxed">
-                        <li>Thiết bị học tập di động: phục vụ học sinh tại nhiều vị trí trong nhà mà không cần khởi động lại máy mỗi khi chuyển chỗ.</li>
-                        <li>Điều khiển smart home hoặc server: phù hợp làm trung tâm điều khiển nhà thông minh với pin dự phòng, hỗ trợ khi mất điện.</li>
-                        <li>Thực tế: nhóm đã thử nghiệm rút sạc và mang máy từ bàn học sang phòng khách để tiếp tục làm việc, máy vẫn duy trì mượt mà.</li>
-                    </ul>
-                </div>
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-xl font-black text-slate-900 mb-4">Hiệu Quả Đạt Được</h3>
-                    <ul class="space-y-2 text-slate-600 text-sm leading-relaxed">
-                        <li>Hiệu quả kinh tế: tận dụng linh kiện cũ, giảm chi phí chỉ còn 428.358đ.</li>
-                        <li>Hiệu quả sử dụng: di động, lưu điện và chạy mượt mà khi chuyển chỗ.</li>
-                        <li>Hiệu quả môi trường: tái chế triệt để, giảm rác thải điện tử, không lãng phí linh kiện. </li>
-                    </ul>
-                </div>
-                <div class="glass-card p-8 rounded-[40px] shadow-xl reveal">
-                    <h3 class="text-xl font-black text-slate-900 mb-4">Tài Liệu Tham Khảo</h3>
-                    <ul class="space-y-2 text-slate-600 text-sm leading-relaxed">
-                        <li><a href="https://www.samsung.com/vn/apps/samsung-dex/?srsltid=AfmBOoq4aZGnXQUFAj6TSrvA0ntYY5aM3PZQz1epRPZgo9UN3qF8WYQe" class="text-emerald-600 hover:underline">Samsung DeX</a></li>
-                        <li><a href="https://www.thegioididong.com/hoi-dap/laptop-bi-nong-phai-lam-sao-107729" class="text-emerald-600 hover:underline">Tản nhiệt trong điện tử</a></li>
-                        <li>Website do Dương Khải Minh thiết kế.</li>
-                    </ul>
+                <div class="md:w-1/2 w-full p-8 bg-slate-900 rounded-3xl">
+                    <div class="flex justify-between mb-4"><span class="text-xs font-black uppercase text-blue-500">UPS Status</span><span class="text-xs font-bold">100%</span></div>
+                    <div class="w-full bg-slate-800 h-5 rounded-full overflow-hidden border border-blue-500/20"><div class="bg-blue-600 h-full w-full shadow-[0_0_15px_#3b82f6]"></div></div>
+                    <p class="text-[10px] text-center mt-6 text-slate-500 font-bold uppercase tracking-widest">Nguồn điện dự phòng thông minh</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-16 px-6 bg-white border-t border-slate-100 text-center">
-        <div class="max-w-4xl mx-auto">
-            <div class="w-16 h-16 bg-emerald-500 rounded-3xl mx-auto flex items-center justify-center text-white font-bold mb-8 shadow-2xl rotate-12">MV</div>
-            <p class="text-slate-900 font-black text-2xl mb-2 tracking-tighter uppercase"> MINI PC TỪ “ RÁC CÔNG NGHỆ ”</p>
-            <p class="text-slate-400 font-bold mb-10 text-[10px] uppercase tracking-widest">Dự án Tái chế Công nghệ Xanh • Vĩnh Long 2026</p>
-            <div class="flex justify-center gap-4 flex-wrap">
-                <span class="px-4 py-1.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded-full uppercase">Desktop Optimized</span>
-                <span class="px-4 py-1.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded-full uppercase">Mobile Friendly</span>
-                <span class="px-4 py-1.5 bg-slate-100 text-slate-500 text-[9px] font-bold rounded-full uppercase">No SVG Engine</span>
-            </div>
+    <footer class="py-20 border-t border-blue-900/30 text-center px-6">
+        <div class="w-12 h-12 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-white font-bold mb-8 shadow-2xl rotate-12">MV</div>
+        <p class="text-blue-500 font-black text-xl mb-4 tracking-tighter uppercase">MINI PC TÁI CHẾ</p>
+        <p class="text-slate-600 font-bold text-[10px] uppercase tracking-[0.4em] mb-10">Tái sinh linh kiện - Học tập không giới hạn</p>
+        <div class="flex flex-wrap justify-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-500 italic">
+            <span>© 2026 Dương Khải Minh & Tăng Khánh Võ</span>
+            <span>Vĩnh Long City</span>
         </div>
     </footer>
 
     <script>
-        // Binary Canvas background
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let width, height, particles = [];
-
-        function initCanvas() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            particles = [];
-            const count = width < 640 ? 30 : 65;
-            for(let i = 0; i < count; i++) {
-                particles.push({
-                    x: Math.random() * width,
-                    y: Math.random() * height,
-                    size: Math.random() * 10 + 4,
-                    speed: Math.random() * 1.5 + 0.5,
-                    val: Math.random() > 0.5 ? '1' : '0',
-                    rot: Math.random() * Math.PI * 2
-                });
+        // Scroll Reveal logic
+        function checkReveal() {
+            var reveals = document.querySelectorAll(".reveal");
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) {
+                    reveals[i].classList.add("active");
+                }
             }
         }
-
-        function drawParticles() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 12px Plus Jakarta Sans';
-            particles.forEach(p => {
-                ctx.save();
-                ctx.translate(p.x, p.y);
-                ctx.rotate(p.rot);
-                ctx.fillText(p.val, 0, 0);
-                ctx.restore();
-                p.y += p.speed;
-                if(p.y > height) { p.y = -20; p.x = Math.random() * width; }
-            });
-            requestAnimationFrame(drawParticles);
-        }
-
-        window.addEventListener('resize', initCanvas);
-        initCanvas(); drawParticles();
-
-        // Reveal logic
-        function checkReveal() {
-            document.querySelectorAll('.reveal').forEach(r => {
-                if(r.getBoundingClientRect().top < window.innerHeight - 100) r.classList.add('active');
-            });
-        }
-        window.addEventListener('scroll', checkReveal);
+        window.addEventListener("scroll", checkReveal);
         checkReveal();
 
         // Tabs logic
         function switchTab(id) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            document.querySelectorAll('.interactive-tab').forEach(b => {
+            document.querySelectorAll('button[onclick^="switchTab"]').forEach(b => {
                 b.classList.remove('tab-active');
-                b.classList.add('bg-white', 'text-slate-500');
+                b.classList.add('glass-card', 'text-slate-500');
             });
             document.getElementById(id).classList.remove('hidden');
-            const btn = document.getElementById('btn-' + id.split('-')[1]);
-            btn.classList.add('tab-active');
-            btn.classList.remove('bg-white', 'text-slate-500');
+            const btnId = 'btn-' + id;
+            document.getElementById(btnId).classList.add('tab-active');
+            document.getElementById(btnId).classList.remove('glass-card', 'text-slate-500');
         }
 
-        // Radar Chart
-        const radarCtx = document.getElementById('radarChart').getContext('2d');
-        new Chart(radarCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Chi phí rẻ', 'Tiết kiệm điện', 'Độ bền', 'Môi trường', 'Yên tĩnh'],
-                datasets: [{
-                    label: 'Dex-Station',
-                    data: [10, 9, 9, 10, 10],
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    pointBackgroundColor: '#10b981',
-                    borderWidth: 3
-                }, {
-                    label: 'PC thường',
-                    data: [3, 5, 7, 3, 5],
-                    borderColor: '#334155',
-                    backgroundColor: 'rgba(51, 65, 85, 0.1)',
-                    pointBackgroundColor: '#334155',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        ticks: { display: false },
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        pointLabels: { font: { weight: 'bold', size: window.innerWidth < 640 ? 8 : 11 } }
-                    }
+        // Radar Chart logic
+        window.onload = function() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Chi phí tối ưu', 'Tiết kiệm điện', 'Yên tĩnh (0dB)', 'Tính Di động', 'Bảo vệ Môi trường'],
+                    datasets: [{
+                        label: 'Sản phẩm của nhóm',
+                        data: [10, 9, 10, 9, 10],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        pointBackgroundColor: '#3b82f6',
+                        borderWidth: 3,
+                        pointRadius: 4
+                    }, {
+                        label: 'PC Văn Phòng Thường',
+                        data: [2, 4, 3, 1, 3],
+                        borderColor: '#475569',
+                        backgroundColor: 'rgba(71, 85, 105, 0.1)',
+                        pointBackgroundColor: '#475569',
+                        borderWidth: 2,
+                        pointRadius: 2
+                    }]
                 },
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
-            }
-        });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            ticks: { display: false },
+                            grid: { color: 'rgba(59, 130, 246, 0.1)' },
+                            pointLabels: { 
+                                color: '#94a3b8',
+                                font: { size: 10, weight: 'bold', family: 'Plus Jakarta Sans' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: { color: '#64748b', font: { size: 10 }, boxWidth: 12 }
+                        }
+                    }
+                }
+            });
+        };
     </script>
 </body>
 </html>
